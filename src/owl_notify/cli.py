@@ -12,7 +12,7 @@ def main() -> int:
     """Main entry point for the CLI."""
     parser = argparse.ArgumentParser(
         prog="owl",
-        description="Send notifications to Bark or Weixin",
+        description="Send notifications to Bark, Weixin, or custom webhooks",
     )
     parser.add_argument(
         "--version",
@@ -37,9 +37,8 @@ def main() -> int:
     parser.add_argument(
         "--platform",
         "-p",
-        choices=["bark", "weixin"],
         default="bark",
-        help="Target platform (default: bark)",
+        help="Target platform (default: bark). Use 'webhook.xxx' for custom webhooks",
     )
     parser.add_argument(
         "--config",
@@ -47,6 +46,12 @@ def main() -> int:
         type=Path,
         default=Path.home() / ".owl-notify.toml",
         help="Path to config file (default: ~/.owl-notify.toml)",
+    )
+    parser.add_argument(
+        "--extra",
+        "-e",
+        action="append",
+        help="Extra fields for webhook templates (format: key=value). Can be used multiple times",
     )
 
     args = parser.parse_args()
@@ -65,8 +70,17 @@ def main() -> int:
     if not args.title or not args.message:
         parser.error("title and message are required when not using --show-config")
 
+    # Parse extra fields
+    extra_fields = {}
+    if args.extra:
+        for item in args.extra:
+            if "=" not in item:
+                parser.error(f"Invalid extra field format: {item}. Expected key=value")
+            key, value = item.split("=", 1)
+            extra_fields[key.strip()] = value.strip()
+
     notifier = Notify(config_path=args.config)
-    success = notifier.send(args.title, args.message, platform=args.platform)
+    success = notifier.send(args.title, args.message, platform=args.platform, extra=extra_fields)
 
     return 0 if success else 1
 

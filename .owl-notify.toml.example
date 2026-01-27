@@ -7,3 +7,50 @@ token = "your-bark-token-here"
 
 [weixin]
 bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key-here"
+
+# Custom Webhook Examples
+# You can define multiple webhook instances with different names
+
+# GET method example - URL template
+[webhook.simple_get]
+url = "https://api.example.com/notify?title={{title}}&message={{message}}"
+method = "GET"
+
+# POST JSON example - Slack
+[webhook.slack]
+url = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+method = "POST"
+body = '''
+{
+  "text": "{{title}}\n\n{{message}}"
+}
+'''
+
+# POST JSON example - Discord with extra fields
+[webhook.discord]
+url = "https://discord.com/api/webhooks/123456789/xxxxxxxxxxxxx"
+method = "POST"
+body = '''
+{
+  "content": "**{{title}}**\n{{message}}",
+  "username": "{{from}}"
+}
+'''
+
+# POST JSON example - Feishu (飞书)
+[webhook.feishu]
+url = "https://open.feishu.cn/open-apis/bot/v2/hook/xxxxx"
+method = "POST"
+body = '''
+{
+  "msg_type": "text",
+  "content": {
+    "text": "{{title}}\n{{message}}\nFrom: {{from}}"
+  }
+}
+'''
+
+# GET method with extra fields
+[webhook.custom_get]
+url = "https://api.example.com/notify?title={{title}}&msg={{message}}&from={{from}}&priority={{priority}}"
+method = "GET"

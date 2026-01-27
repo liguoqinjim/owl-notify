@@ -31,21 +31,27 @@ class Notify:
             print(f"Error: Failed to load config: {e}")
             return {}
 
-    def send(self, title: str, message: str, platform: str = "bark") -> bool:
+    def send(self, title: str, message: str, platform: str = "bark", extra: dict | None = None) -> bool:
         """Send a notification.
 
         Args:
             title: Notification title
             message: Notification message body
-            platform: Target platform ('bark' or 'weixin')
+            platform: Target platform ('bark', 'weixin', or 'webhook.xxx')
+            extra: Extra fields for custom webhook templates (optional)
 
         Returns:
             True if successful, False otherwise
         """
+        if extra is None:
+            extra = {}
+
         if platform == "bark":
             return self._send_bark(title, message)
         elif platform == "weixin":
             return self._send_weixin(title, message)
+        elif platform.startswith("webhook."):
+            return self._send_webhook(title, message, platform, extra)
         else:
             print(f"Error: Unknown platform: {platform}")
             return False
@@ -104,3 +110,79 @@ class Notify:
         except requests.RequestException as e:
             print(f"Error: Weixin request failed: {e}")
             return False
+
+    def _send_webhook(self, title: str, message: str, platform: str, extra: dict) -> bool:
+        """Send notification via custom webhook.
+
+        Args:
+            title: Notification title
+            message: Notification message body
+            platform: Platform name (format: 'webhook.xxx')
+            extra: Extra fields for template substitution
+
+        Returns:
+            True if successful, False otherwise
+        """
+        # Extract webhook instance name (e.g., 'webhook.slack' -> 'slack')
+        webhook_name = platform.split(".", 1)[1] if "." in platform else ""
+
+        # TOML creates nested dict: [webhook.slack] becomes config['webhook']['slack']
+        webhook_configs = self.config.get("webhook", {})
+        config = webhook_configs.get(webhook_name, {})
+
+        # Get required configuration
+        url = config.get("url", "")
+        method = config.get("method", "POST").upper()
+        body_template = config.get("body", "")
+
+        if not url:
+            print(f"Error: Webhook config missing: url not set for {platform}")
+            return False
+
+        # Prepare template variables
+        template_vars = {
+            "title": title,
+            "message": message,
+            **extra
+        }
+
+        # Replace template placeholders
+        processed_url = self._replace_template(url, template_vars)
+
+        try:
+            if method == "GET":
+                resp = requests.get(processed_url, timeout=10)
+            elif method == "POST":
+                processed_body = self._replace_template(body_template, template_vars)
+                resp = requests.post(
+                    processed_url,
+                    data=processed_body,
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+            else:
+                print(f"Error: Unsupported HTTP method: {method}")
+                return False
+
+            resp.raise_for_status()
+            print(f"Webhook notification sent: {title}")
+            return True
+        except requests.RequestException as e:
+            print(f"Error: Webhook request failed: {e}")
+            return False
+
+    def _replace_template(self, template: str, variables: dict) -> str:
+        """Replace template placeholders with actual values.
+
+        Args:
+            template: Template string with {{key}} placeholders
+            variables: Dictionary of key-value pairs to substitute
+
+        Returns:
+            String with placeholders replaced
+        """
+        result = template
+        for key, value in variables.items():
+            placeholder = f"{{{{{key}}}}}"
+            result = result.replace(placeholder, str(value))
+        return result

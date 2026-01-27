@@ -208,6 +208,7 @@ __marimo__/
 
 # AI
 .claude
+.vscode
 CLAUDE.md
 PUBLISHING.md
 RELEASE_CHECKLIST.md
