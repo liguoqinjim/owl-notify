@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "owl-notify"
+version = "0.1.0"
+description = "A simple notification CLI for Bark and Weixin"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [
+    { name = "owl-notify contributors" }
+]
+keywords = ["notification", "bark", "weixin", "cli"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "requests",
+    "toml",
+]
+
+[project.scripts]
+owl = "owl_notify.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/owl-notify/owl-notify"
+Repository = "https://github.com/owl-notify/owl-notify"
+
+[tool.setuptools.packages.find]
+where = ["src"]

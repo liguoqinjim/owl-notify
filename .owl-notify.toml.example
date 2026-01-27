@@ -1,0 +1,9 @@
+# Example configuration file for owl-notify
+# Copy this to ~/.owl-notify.toml and fill in your credentials
+
+[bark]
+server_url = "https://api.day.app"
+token = "your-bark-token-here"
+
+[weixin]
+bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key-here"
