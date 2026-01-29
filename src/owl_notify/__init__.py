@@ -7,7 +7,7 @@ from pathlib import Path
 from owl_notify.notify import Notify
 from owl_notify.platform import platform
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __all__ = ["Notify", "send", "platform", "__version__"]
 
 
