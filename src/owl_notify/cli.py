@@ -25,6 +25,12 @@ def main() -> int:
         help="Show the absolute path of the config file and exit",
     )
     parser.add_argument(
+        "--list-platforms",
+        "-l",
+        action="store_true",
+        help="List all available platforms from config file and exit",
+    )
+    parser.add_argument(
         "title",
         nargs="?",
         help="Notification title",
@@ -66,9 +72,50 @@ def main() -> int:
             print(f"Status: File not found")
         return 0
 
+    # Handle --list-platforms flag
+    if args.list_platforms:
+        notifier = Notify(config_path=args.config)
+        platforms = notifier.list_platforms()
+
+        print("Available Platforms:")
+        print("=" * 40)
+        print()
+        print("Built-in Platforms:")
+        descriptions = {
+            "bark": "(Bark notification service)",
+            "weixin": "(Weixin Work Bot - text format)",
+            "weixin_markdown_v2": "(Weixin Work Bot - markdown format)"
+        }
+        for p in platforms["builtin"]:
+            desc = descriptions.get(p, "")
+            print(f"  - {p:30} {desc}")
+
+        if platforms["instances"]:
+            print()
+            print("Platform Instances:")
+            for p in platforms["instances"]:
+                # Determine base platform
+                base = None
+                for b in ["weixin_markdown_v2", "weixin", "bark"]:
+                    if p.startswith(b + "_"):
+                        base = b
+                        break
+                if base:
+                    print(f"  - {p:30} (instance of {base})")
+                else:
+                    print(f"  - {p}")
+
+        if platforms["webhooks"]:
+            print()
+            print("Webhook Platforms:")
+            for p in platforms["webhooks"]:
+                print(f"  - {p}")
+
+        return 0
+
     # Validate required arguments for sending notification
     if not args.title or not args.message:
-        parser.error("title and message are required when not using --show-config")
+        parser.error("title and message are required when not using --show-config or --list-platforms")
 
     # Parse extra fields
     extra_fields = {}

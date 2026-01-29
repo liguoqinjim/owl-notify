@@ -1,6 +1,18 @@
 # Example configuration file for owl-notify
 # Copy this to ~/.owl-notify.toml and fill in your credentials
 
+# ============================================================
+# Global Defaults (Optional)
+# ============================================================
+# These values apply to all platforms unless overridden
+[defaults]
+timeout = 30        # Request timeout in seconds (default: 30)
+max_retries = 3     # Number of retry attempts for network errors (default: 3)
+
+# ============================================================
+# Basic Platform Configurations
+# ============================================================
+
 [bark]
 server_url = "https://api.day.app"
 token = "your-bark-token-here"
@@ -8,7 +20,54 @@ token = "your-bark-token-here"
 [weixin]
 bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key-here"
 
+[weixin_markdown_v2]
+bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-markdown-key-here"
+
+# ============================================================
+# Platform Instances (Configuration Inheritance)
+# ============================================================
+# Create named instances that inherit from base platforms.
+# Instance names follow the pattern: {platform}_{instance_name}
+#
+# Priority: instance config > base platform config > global defaults
+#
+# Examples:
+
+# Bark instance - inherits server_url from [bark], only override token
+[bark_phone1]
+token = "phone1-token"
+# Inherits: server_url = "https://api.day.app" from [bark]
+# Inherits: timeout = 30, max_retries = 3 from [defaults]
+
+[bark_phone2]
+token = "phone2-token"
+timeout = 60  # Override timeout for this instance
+
+# Weixin instance - use simplified 'key' format (auto-concatenation)
+[weixin_team1]
+key = "team1-webhook-key"
+# Auto-generated: bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=team1-webhook-key"
+# Inherits: timeout and max_retries from [defaults]
+
+[weixin_team2]
+key = "team2-webhook-key"
+timeout = 45  # Custom timeout for this team
+
+# Weixin instance - full URL override (if you need custom endpoint)
+[weixin_custom]
+bot_url = "https://custom.endpoint.com/webhook?key=custom-key"
+max_retries = 5
+
+# Weixin Markdown V2 instance
+[weixin_markdown_v2_alerts]
+key = "alerts-webhook-key"
+# Auto-generated bot_url with the key
+
+# ============================================================
 # Custom Webhook Examples
+# ============================================================
+# Webhooks use the naming pattern: webhook.{name}
+# They do NOT support configuration inheritance
 # You can define multiple webhook instances with different names
 
 # GET method example - URL template
