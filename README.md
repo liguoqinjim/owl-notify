@@ -1,5 +1,10 @@
 # owl-notify
 
+[![PyPI version](https://img.shields.io/pypi/v/owl-notify)](https://pypi.org/project/owl-notify/)
+[![Python](https://img.shields.io/pypi/pyversions/owl-notify)](https://pypi.org/project/owl-notify/)
+[![License](https://img.shields.io/pypi/l/owl-notify)](https://github.com/liguoqinjim/owl-notify/blob/main/LICENSE)
+[![Downloads](https://static.pepy.tech/badge/owl-notify)](https://pepy.tech/project/owl-notify)
+
 A simple notification CLI for Bark, Weixin, and custom webhooks.
 
 ## Installation
