@@ -8,6 +8,13 @@ A simple notification CLI for Bark, Weixin, and custom webhooks.
 pip install owl-notify
 ```
 
+## Supported Platforms
+
+- **Bark**: iOS notification service
+- **Weixin (Text)**: Weixin Work Bot with plain text format
+- **Weixin (Markdown V2)**: Weixin Work Bot with markdown formatting support
+- **Custom Webhooks**: Any HTTP-based webhook service (Slack, Discord, Feishu, etc.)
+
 ## Configuration
 
 Create a config file at `~/.owl-notify.toml`:
@@ -18,6 +25,9 @@ server_url = "https://api.day.app"
 token = "your-bark-token"
 
 [weixin]
+bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key"
+
+[weixin_markdown_v2]
 bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key"
 
 # Custom webhook example
@@ -37,8 +47,11 @@ body = '''
 # Send via Bark (default)
 owl "Title" "Message"
 
-# Send via Weixin
+# Send via Weixin (text format)
 owl "Title" "Message" --platform weixin
+
+# Send via Weixin (markdown_v2 format)
+owl "Title" "Message" --platform weixin_markdown_v2
 
 # Send via custom webhook
 owl "Title" "Message" --platform webhook.slack
@@ -66,8 +79,16 @@ import owl_notify
 # Use default config (~/.owl-notify.toml)
 owl_notify.send("Title", "Message")
 
-# Send via different platforms
+# Method 1: Using platform constants (recommended - type-safe, autocomplete)
+owl_notify.send("Title", "Message", platform=owl_notify.platform.bark)
+owl_notify.send("Title", "Message", platform=owl_notify.platform.weixin)
+owl_notify.send("Title", "Message", platform=owl_notify.platform.weixin_markdown_v2)
+owl_notify.send("Title", "Message", platform=owl_notify.platform.webhook("slack"))
+
+# Method 2: Using strings (still supported for backward compatibility)
+owl_notify.send("Title", "Message", platform="bark")
 owl_notify.send("Title", "Message", platform="weixin")
+owl_notify.send("Title", "Message", platform="weixin_markdown_v2")
 owl_notify.send("Title", "Message", platform="webhook.slack")
 
 # Use custom config file
@@ -77,7 +98,7 @@ owl_notify.send("Title", "Message", config_path="/path/to/config.toml")
 owl_notify.send(
     "Title",
     "Message",
-    platform="webhook.discord",
+    platform=owl_notify.platform.webhook("discord"),
     extra={"from": "Bot", "priority": "high"}
 )
 
@@ -85,7 +106,7 @@ owl_notify.send(
 owl_notify.send(
     "Title",
     "Message",
-    platform="webhook.slack",
+    platform=owl_notify.platform.webhook("slack"),
     extra={"from": "System"},
     config_path="/custom/config.toml"
 )
@@ -94,7 +115,7 @@ owl_notify.send(
 ### Class-based Usage (Also Available)
 
 ```python
-from owl_notify import Notify
+from owl_notify import Notify, platform
 
 # Use default config (~/.owl-notify.toml)
 notifier = Notify()
@@ -102,18 +123,20 @@ notifier = Notify()
 # Or specify config path
 notifier = Notify(config_path="/path/to/config.toml")
 
-# Send notification
+# Send notification with platform constants
+notifier.send("Title", "Message", platform=platform.bark)
+notifier.send("Title", "Message", platform=platform.weixin)
+notifier.send("Title", "Message", platform=platform.webhook("slack"))
+
+# Or use strings (backward compatible)
 notifier.send("Title", "Message", platform="bark")
 notifier.send("Title", "Message", platform="weixin")
-
-# Send via custom webhook
-notifier.send("Title", "Message", platform="webhook.slack")
 
 # Use extra fields
 notifier.send(
     "Title",
     "Message",
-    platform="webhook.discord",
+    platform=platform.webhook("discord"),
     extra={"from": "Bot", "priority": "high"}
 )
 ```

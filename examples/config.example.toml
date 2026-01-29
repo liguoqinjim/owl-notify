@@ -1,0 +1,59 @@
+# owl-notify configuration example
+# Copy this file to ~/.owl-notify.toml and fill in your credentials
+
+# Bark iOS notification service
+[bark]
+server_url = "https://api.day.app"
+token = "your-bark-token-here"
+
+# Weixin Work Bot - Text format
+# Simple text messages without formatting
+[weixin]
+bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-weixin-key-here"
+
+# Weixin Work Bot - Markdown V2 format
+# Supports rich markdown formatting (bold, lists, headers, etc.)
+[weixin_markdown_v2]
+bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-weixin-key-here"
+
+# Note: You can use the same bot_url for both weixin and weixin_markdown_v2,
+# or use different webhook keys for different purposes
+
+# Custom webhook example - Slack
+[webhook.slack]
+url = "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+method = "POST"
+body = '''
+{
+  "text": "{{title}}\n\n{{message}}"
+}
+'''
+
+# Custom webhook example - Discord
+[webhook.discord]
+url = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+method = "POST"
+body = '''
+{
+  "content": "**{{title}}**\n{{message}}",
+  "username": "{{from}}"
+}
+'''
+
+# Custom webhook example - Feishu (飞书)
+[webhook.feishu]
+url = "https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_WEBHOOK_TOKEN"
+method = "POST"
+body = '''
+{
+  "msg_type": "text",
+  "content": {
+    "text": "{{title}}\n{{message}}"
+  }
+}
+'''
+
+# Custom webhook example - GET request
+[webhook.custom_api]
+url = "https://api.example.com/notify?title={{title}}&message={{message}}&priority={{priority}}"
+method = "GET"

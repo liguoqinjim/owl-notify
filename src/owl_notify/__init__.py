@@ -1,11 +1,14 @@
 """owl-notify: A simple notification CLI for Bark and Weixin."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from owl_notify.notify import Notify
+from owl_notify.platform import platform
 
 __version__ = "0.1.1"
-__all__ = ["Notify", "send", "__version__"]
+__all__ = ["Notify", "send", "platform", "__version__"]
 
 
 def send(
@@ -28,12 +31,22 @@ def send(
         True if successful, False otherwise
 
     Examples:
+        Using platform constants (recommended):
         >>> import owl_notify
         >>> owl_notify.send("Title", "Message")
+        >>> owl_notify.send("Title", "Message", platform=owl_notify.platform.bark)
+        >>> owl_notify.send("Title", "Message", platform=owl_notify.platform.weixin)
+        >>> owl_notify.send("Title", "Message", platform=owl_notify.platform.weixin_markdown_v2)
+        >>> owl_notify.send("Title", "Message", platform=owl_notify.platform.webhook("slack"))
+
+        Using strings (also supported):
         >>> owl_notify.send("Title", "Message", platform="weixin")
+        >>> owl_notify.send("Title", "Message", platform="weixin_markdown_v2")
         >>> owl_notify.send("Title", "Message", platform="webhook.slack")
+
+        With extra parameters:
         >>> owl_notify.send("Title", "Message", config_path="/custom/config.toml")
-        >>> owl_notify.send("Title", "Message", platform="webhook.discord", extra={"from": "Bot"})
+        >>> owl_notify.send("Title", "Message", platform=owl_notify.platform.webhook("discord"), extra={"from": "Bot"})
     """
     notifier = Notify(config_path=config_path)
     return notifier.send(title, message, platform=platform, extra=extra)

@@ -1,5 +1,7 @@
 """Notification backends for Bark and Weixin."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import requests
@@ -37,7 +39,7 @@ class Notify:
         Args:
             title: Notification title
             message: Notification message body
-            platform: Target platform ('bark', 'weixin', or 'webhook.xxx')
+            platform: Target platform ('bark', 'weixin', 'weixin_markdown_v2', or 'webhook.xxx')
             extra: Extra fields for custom webhook templates (optional)
 
         Returns:
@@ -50,6 +52,8 @@ class Notify:
             return self._send_bark(title, message)
         elif platform == "weixin":
             return self._send_weixin(title, message)
+        elif platform == "weixin_markdown_v2":
+            return self._send_weixin_markdown_v2(title, message)
         elif platform.startswith("webhook."):
             return self._send_webhook(title, message, platform, extra)
         else:
@@ -109,6 +113,51 @@ class Notify:
                 return False
         except requests.RequestException as e:
             print(f"Error: Weixin request failed: {e}")
+            return False
+
+    def _send_weixin_markdown_v2(self, title: str, message: str) -> bool:
+        """Send notification via Weixin Work Bot using markdown_v2 format.
+
+        Weixin API: POST bot_url with markdown_v2 body
+        """
+        config = self.config.get("weixin_markdown_v2", {})
+        bot_url = config.get("bot_url", "")
+
+        if not bot_url:
+            print("Error: Weixin markdown_v2 config missing: bot_url not set")
+            return False
+
+        # Format content as markdown
+        # If title is provided, use it as a header
+        if title:
+            content = f"**{title}**\n\n{message}"
+        else:
+            content = message
+
+        payload = {
+            "msgtype": "markdown_v2",
+            "markdown_v2": {
+                "content": content
+            }
+        }
+
+        try:
+            resp = requests.post(
+                bot_url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if data.get("errcode") == 0:
+                print(f"Weixin markdown_v2 notification sent: {title}")
+                return True
+            else:
+                print(f"Error: Weixin markdown_v2 API error: {data}")
+                return False
+        except requests.RequestException as e:
+            print(f"Error: Weixin markdown_v2 request failed: {e}")
             return False
 
     def _send_webhook(self, title: str, message: str, platform: str, extra: dict) -> bool:
