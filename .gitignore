@@ -210,5 +210,6 @@ __marimo__/
 .claude
 .vscode
 CLAUDE.md
+AGENTS.md
 PUBLISHING.md
 RELEASE_CHECKLIST.md

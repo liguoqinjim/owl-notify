@@ -22,7 +22,7 @@ pip install owl-notify
 
 ## Configuration
 
-Create a config file at `~/.owl-notify.toml`:
+Create a config file at `~/.owl-notify.toml`(get path via `owl --show-config`) :
 
 ```toml
 [bark]
