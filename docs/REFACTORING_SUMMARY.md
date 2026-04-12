@@ -166,7 +166,7 @@ url = "https://hooks.slack.com/services/T22222222/..."
 
 ## Testing
 
-**Created `test_new_api.py`**:
+**Created `tests/test_new_api.py`**:
 - Tests `PlatformChannel` class
 - Tests platform constants
 - Tests configuration parsing
@@ -198,8 +198,8 @@ url = "https://hooks.slack.com/services/T22222222/..."
 
 ## Files Created
 
-- `test_new_api.py` - API tests
-- `REFACTORING_SUMMARY.md` - This file
+- `tests/test_new_api.py` - API tests
+- `docs/REFACTORING_SUMMARY.md` - This file
 
 ## Next Steps
 
