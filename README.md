@@ -175,6 +175,10 @@ platforms = notifier.list_platforms()
 
 ### Inheritance (bark, weixin, weixin_markdown_v2)
 
+- [bark](https://github.com/Finb/bark-server/blob/master/docs/API_V2.md)
+- [weixin](https://developer.work.weixin.qq.com/document/path/91770#%E6%96%87%E6%9C%AC%E7%B1%BB%E5%9E%8B)
+- [weixin_markdown_v2](https://developer.work.weixin.qq.com/document/path/91770#markdown-v2%E7%B1%BB%E5%9E%8B)
+
 Channels inherit configuration from their base platform:
 
 ```toml
