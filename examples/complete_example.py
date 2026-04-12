@@ -87,9 +87,7 @@ if __name__ == "__main__":
     print(f"  webhook('slack') = {owl_notify.platform.webhook('slack')!r}")
     print()
 
-    # Example of backward compatibility
-    print(f"Backward compatibility:")
-    print(f"  Both methods work:")
-    print(f"    platform=owl_notify.platform.bark")
-    print(f"    platform='bark'")
-    print(f"  Both are equivalent!")
+    print(f"Platform selection:")
+    print(f"  Base platform: platform=owl_notify.platform.bark")
+    print(f"  String form: platform='bark'")
+    print(f"  Channel form: platform=owl_notify.platform.bark.channel('phone-1')")

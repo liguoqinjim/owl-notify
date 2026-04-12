@@ -84,33 +84,61 @@ def main() -> int:
         descriptions = {
             "bark": "(Bark notification service)",
             "weixin": "(Weixin Work Bot - text format)",
-            "weixin_markdown_v2": "(Weixin Work Bot - markdown format)"
+            "weixin_markdown_v2": "(Weixin Work Bot - markdown format)",
+            "webhook": "(Custom webhook - independent channels)",
         }
         for p in platforms["builtin"]:
             desc = descriptions.get(p, "")
             print(f"  - {p:30} {desc}")
 
-        if platforms["instances"]:
+        if platforms["channels"]:
             print()
-            print("Platform Instances:")
-            for p in platforms["instances"]:
-                # Determine base platform
-                base = None
-                for b in ["weixin_markdown_v2", "weixin", "bark"]:
-                    if p.startswith(b + "_"):
-                        base = b
-                        break
-                if base:
-                    print(f"  - {p:30} (instance of {base})")
-                else:
-                    print(f"  - {p}")
+            print("Configured Channels:")
+            grouped_channels = {}
+            for p in platforms["channels"]:
+                base = p.split(".", 1)[0]
+                if base not in grouped_channels:
+                    grouped_channels[base] = []
+                grouped_channels[base].append(p)
 
-        if platforms["webhooks"]:
+            ordered_platforms = []
+            for platform_name in platforms["builtin"]:
+                if platform_name in grouped_channels:
+                    ordered_platforms.append(platform_name)
+            for platform_name in grouped_channels:
+                if platform_name not in ordered_platforms:
+                    ordered_platforms.append(platform_name)
+
+            for platform_name in ordered_platforms:
+                print(f"  - {platform_name}")
+                for channel_name in grouped_channels[platform_name]:
+                    print(f"    - {channel_name}")
+
+        if platforms["invalid"]:
             print()
-            print("Webhook Platforms:")
-            for p in platforms["webhooks"]:
-                print(f"  - {p}")
+            print("Invalid Entries:")
+            for p in platforms["invalid"]:
+                print(f"  ❌ {p}")
 
+            print()
+            print("Invalid entries do not match the supported channel format: platform.channel-name")
+            print("Platform names use underscores (_); channel names use hyphens (-).")
+            print("Example: weixin_markdown_v2.nbl-alerts")
+
+        print()
+        print("Usage:")
+        print("  owl 'Title' 'Message' --platform bark")
+        print("  owl 'Title' 'Message' --platform bark.phone-1")
+        print("  owl 'Title' 'Message' --platform weixin.team-alerts")
+        print("  owl 'Title' 'Message' --platform webhook.slack-team1")
+        return 0
+
+        print()
+        print("Usage:")
+        print("  owl 'Title' 'Message' --platform bark")
+        print("  owl 'Title' 'Message' --platform bark.phone-1")
+        print("  owl 'Title' 'Message' --platform weixin.team-alerts")
+        print("  owl 'Title' 'Message' --platform webhook.slack-team1")
         return 0
 
     # Validate required arguments for sending notification

@@ -1,115 +1,169 @@
-# Example configuration file for owl-notify
-# Copy this to ~/.owl-notify.toml and fill in your credentials
+# owl-notify Configuration File
+# Place this file at ~/.owl-notify.toml or ./.owl-notify.toml
 
-# ============================================================
+# ============================================================================
+# Naming Convention
+# ============================================================================
+# - Platform and channel are separated by dot (.)
+# - Platform names use underscores (_) for word separation
+# - Channel names use hyphens (-) for word separation
+# - Example: weixin_markdown_v2.nbl-alerts
+
+# ============================================================================
 # Global Defaults (Optional)
-# ============================================================
-# These values apply to all platforms unless overridden
+# ============================================================================
 [defaults]
 timeout = 30        # Request timeout in seconds (default: 30)
-max_retries = 3     # Number of retry attempts for network errors (default: 3)
 
-# ============================================================
-# Basic Platform Configurations
-# ============================================================
+# ============================================================================
+# Error Handling and Retry Configuration
+# ============================================================================
+[error]
+max_retries = 3                                    # Maximum number of retry attempts (default: 3)
+retry_delay_ms = 1000                              # Delay between retries in milliseconds (default: 1000ms = 1s)
+notification_platform = "weixin_markdown_v2.nbl-alerts"  # Platform to send error notifications
+                                                   # Examples: "weixin_markdown_v2.nbl-alerts", "bark.phone-1"
+                                                   # Leave empty to disable error notifications
 
+# How it works:
+# 1. When a notification fails, it will retry up to max_retries times
+# 2. Between each retry, it waits retry_delay_ms milliseconds
+# 3. If all retries fail, an error notification is sent to notification_platform
+# 4. Error notifications themselves do not retry (to prevent infinite loops)
+
+# ============================================================================
+# Base Platform Configurations
+# ============================================================================
+
+# Bark Configuration
+# Get your device token from the Bark app
 [bark]
 server_url = "https://api.day.app"
 token = "your-bark-token-here"
+# Optional: Sound and other settings
+# sound = "bell"
+# badge = 1
+# group = "MyGroup"
 
+# Weixin Work Bot (Text Format)
 [weixin]
 bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key-here"
 
+# Weixin Work Bot (Markdown Format)
 [weixin_markdown_v2]
 bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-markdown-key-here"
 
-# ============================================================
-# Platform Instances (Configuration Inheritance)
-# ============================================================
-# Create named instances that inherit from base platforms.
-# Instance names follow the pattern: {platform}_{instance_name}
-#
-# Priority: instance config > base platform config > global defaults
-#
-# Examples:
+# ============================================================================
+# Platform Channels (Inheritance)
+# ============================================================================
+# Channels inherit configuration from their base platform.
+# Format: [platform.channel-name]
 
-# Bark instance - inherits server_url from [bark], only override token
-[bark_phone1]
+# Bark channels - inherit from [bark]
+[bark.phone-1]
 token = "phone1-token"
-# Inherits: server_url = "https://api.day.app" from [bark]
-# Inherits: timeout = 30, max_retries = 3 from [defaults]
+# Inherits: server_url from [bark]
 
-[bark_phone2]
+[bark.phone-2]
 token = "phone2-token"
-timeout = 60  # Override timeout for this instance
+# Inherits: server_url from [bark]
 
-# Weixin instance - use simplified 'key' format (auto-concatenation)
-[weixin_team1]
-key = "team1-webhook-key"
-# Auto-generated: bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=team1-webhook-key"
-# Inherits: timeout and max_retries from [defaults]
+[bark.work-device]
+token = "work-device-token"
+timeout = 60  # Override timeout for this channel
 
-[weixin_team2]
-key = "team2-webhook-key"
-timeout = 45  # Custom timeout for this team
+# Weixin channels - inherit from [weixin]
+# Method 1: Use 'key' field (auto-generates bot_url)
+[weixin.team-alerts]
+key = "team-alerts-key"
+# Auto-generated: bot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=team-alerts-key"
 
-# Weixin instance - full URL override (if you need custom endpoint)
-[weixin_custom]
-bot_url = "https://custom.endpoint.com/webhook?key=custom-key"
-max_retries = 5
+[weixin.prod-monitor]
+key = "prod-monitor-key"
 
-# Weixin Markdown V2 instance
-[weixin_markdown_v2_alerts]
-key = "alerts-webhook-key"
+# Method 2: Use full bot_url (overrides base configuration)
+[weixin.custom-endpoint]
+bot_url = "https://custom-weixin-server.com/webhook?key=custom-key"
+
+# Weixin Markdown V2 channels - inherit from [weixin_markdown_v2]
+[weixin_markdown_v2.nbl-alerts]
+key = "nbl-alerts-key"
 # Auto-generated bot_url with the key
 
-# ============================================================
-# Custom Webhook Examples
-# ============================================================
-# Webhooks use the naming pattern: webhook.{name}
-# They do NOT support configuration inheritance
-# You can define multiple webhook instances with different names
+[weixin_markdown_v2.prod-delist]
+key = "prod-delist-key"
 
-# GET method example - URL template
-[webhook.simple_get]
+# ============================================================================
+# Webhook Channels (Independent, No Inheritance)
+# ============================================================================
+# Webhook channels are independent and do not support inheritance.
+# Each webhook.xxx channel must have its own complete configuration.
+# Format: [webhook.channel-name]
+
+# Slack webhook
+[webhook.slack-team1]
+url = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
+method = "POST"
+body = '{"text": "{{title}}\\n{{message}}"}'
+
+# Discord webhook
+[webhook.discord-alerts]
+url = "https://discord.com/api/webhooks/123456789/xxxxxxxxxxxxx"
+method = "POST"
+body = '{"content": "**{{title}}**\\n{{message}}"}'
+
+# Custom GET webhook with URL template
+[webhook.custom-get]
 url = "https://api.example.com/notify?title={{title}}&message={{message}}"
 method = "GET"
 
-# POST JSON example - Slack
-[webhook.slack]
-url = "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX"
-method = "POST"
-body = '''
-{
-  "text": "{{title}}\n\n{{message}}"
-}
-'''
-
-# POST JSON example - Discord with extra fields
-[webhook.discord]
-url = "https://discord.com/api/webhooks/123456789/xxxxxxxxxxxxx"
-method = "POST"
-body = '''
-{
-  "content": "**{{title}}**\n{{message}}",
-  "username": "{{from}}"
-}
-'''
-
-# POST JSON example - Feishu (飞书)
-[webhook.feishu]
-url = "https://open.feishu.cn/open-apis/bot/v2/hook/xxxxx"
-method = "POST"
-body = '''
-{
-  "msg_type": "text",
-  "content": {
-    "text": "{{title}}\n{{message}}\nFrom: {{from}}"
-  }
-}
-'''
-
-# GET method with extra fields
-[webhook.custom_get]
-url = "https://api.example.com/notify?title={{title}}&msg={{message}}&from={{from}}&priority={{priority}}"
+# n8n webhook
+[webhook.n8n-notify]
+url = "https://n8n.example.com/webhook/xxxxx?title={{title}}&content={{message}}"
 method = "GET"
+
+# ============================================================================
+# Custom Platforms (For Reusable Webhook Configurations)
+# ============================================================================
+# If you need to reuse webhook configurations, create a custom platform.
+# Custom platforms support inheritance like built-in platforms.
+
+# Example: Slack platform with multiple channels
+[slack]
+method = "POST"
+body = '{"text": "{{title}}\\n{{message}}"}'
+
+[slack.team1]
+url = "https://hooks.slack.com/services/T11111111/B11111111/YYYYYYYYYYYYYYYYYYYY"
+# Inherits: method and body from [slack]
+
+[slack.team2]
+url = "https://hooks.slack.com/services/T22222222/B22222222/ZZZZZZZZZZZZZZZZZZZZ"
+# Inherits: method and body from [slack]
+
+# ============================================================================
+# Usage Examples
+# ============================================================================
+
+# CLI:
+#   owl "Title" "Message" --platform bark
+#   owl "Title" "Message" --platform bark.phone-1
+#   owl "Title" "Message" --platform weixin.team-alerts
+#   owl "Title" "Message" --platform weixin_markdown_v2.nbl-alerts
+#   owl "Title" "Message" --platform webhook.slack-team1
+#   owl "Title" "Message" --platform slack.team1
+
+# Python:
+#   import owl_notify
+#
+#   # Using platform constants (recommended)
+#   owl_notify.send("Title", "Message", platform=owl_notify.platform.bark)
+#   owl_notify.send("Title", "Message", platform=owl_notify.platform.bark.channel("phone-1"))
+#   owl_notify.send("Title", "Message", platform=owl_notify.platform.weixin.channel("team-alerts"))
+#   owl_notify.send("Title", "Message", platform=owl_notify.platform.webhook.channel("slack-team1"))
+#
+#   # Using strings (also supported)
+#   owl_notify.send("Title", "Message", platform="bark")
+#   owl_notify.send("Title", "Message", platform="bark.phone-1")
+#   owl_notify.send("Title", "Message", platform="weixin.team-alerts")
+#   owl_notify.send("Title", "Message", platform="webhook.slack-team1")
